@@ -88,8 +88,6 @@
 "MIDI port used by mma"
 )
 
-(defvar mma-file-encoding 'latin-1)
-
 (defvar mma-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "\C-c\C-c" 'mma-compile)
@@ -107,7 +105,6 @@
   (kill-all-local-variables)
   (use-local-map mma-mode-map)
   (setq major-mode 'mma-mode)
-  (setq buffer-file-coding-system mma-file-encoding)
   (setq mode-name "Mma")
   (setq comment-start "// ")
   (setq comment-end "")
