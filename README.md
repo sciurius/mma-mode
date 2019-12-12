@@ -4,17 +4,25 @@
 
 This is a majore mode to edit and play MMA files.
 
-Original version (C) 2005-2014 VU NGOC San 
+It is based on an original version from Vu Ngoc San.
+
+Enhancements:
+
+* Force MMA files to be encoded in Latin1, MMA cannot handle Unicode yet.
+
+The MMA program is written by Bob van der Poel.
+See [his MMA site](https://www.mellowwood.ca/mma) for
+details on the MMA program.
+
+## Original version and disclaimer:
+
+(C) 2005-2014 VU NGOC San
 
 This is written for Emacs-23 and should work for emacs-22. No
 guarantee for older emacsen.
 
 By the way, this mode is pretty minimalistic. I just wrote the
 features I needed. Any suggestion for improvement is welcome.
-
-The MMA program is written by Bob van der Poel.
-See [his MMA site](https://www.mellowwood.ca/mma) for
-details on the MMA program.
 
 ## Installation
 
@@ -23,9 +31,9 @@ Copy the file `lisp/mma.el` to a place where it can be found by Emacs
 
 In your `.emacs` add the following lines:
 
-   (autoload 'mma-mode "mma" "mma music file mode" t)
-   (add-to-list 'auto-mode-alist
-                '("\\.mma$" . mma-mode))
+    (autoload 'mma-mode "mma" "mma music file mode" t)
+    (add-to-list 'auto-mode-alist
+                 '("\\.mma$" . mma-mode))
 
 Then when you open a `.mma` file you should have a `Mma` menu in the menu-bar.
 It shows the keyboard shortcuts as well.
