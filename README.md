@@ -32,7 +32,7 @@ It shows the keyboard shortcuts as well.
 
 ## MIDI players
 
-This mode is originally written for using the midi player `aplaymidi`
+This mode is originally written for using the midi player `xplayer`, `aplaymidi`
 or the `timidity` midi synthesizer. Other programms can be used via
 the Mma menu.
 

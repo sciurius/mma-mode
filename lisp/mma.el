@@ -1,13 +1,13 @@
 ;; mma.el, emacs major mode for mma: Musical MIDI Accompaniment
 ;;
-;; Copyright VU NGOC San 2005-2014
+;; Copyright VU NGOC San 2005-2018
 ;; san.vu-ngoc_ _@_ _univ-rennes1.fr
 ;; 
 ;; version February 8, 2014: emacs-23.4.1 version.  This version will
 ;; automatically update the keywords to highlight with your version of
-;; mma.
+;; mma. THUS IT WILL NOT WORK IF MMA IS NOT INSTALLED.
 ;;
-;; this is written for emacs-23 and should work for emacs-22. No
+;; This is written for emacs-23 and should work for emacs-22. No
 ;; guarantee for older emacsen.  By the way, this mode is pretty
 ;; minimalistic. I just wrote the features I needed. Any suggestion
 ;; for improvement is welcome.
@@ -53,7 +53,8 @@
 ;; playmidi -e -D /dev/midi file.mid 
 ;;
 ;; *******************************************************************
-
+;; 2018: Thanks to Johan Vromans for suggesting comment-start/stop
+;;
 ;(require 'font-lock)
 (require 'compile)
 (setq compilation-error-regexp-alist
@@ -69,14 +70,16 @@
   "full command line for executing mma")
 
 (defvar mma-midi-player 
-;"/usr/bin/kmid"
-"/usr/bin/timidity"
-;"/usr/bin/aplaymidi"
+  ;;"/usr/bin/kmid"
+  ;;"/usr/bin/timidity"
+  "/usr/bin/xplayer"
+  ;;"/usr/bin/aplaymidi"
   "program for playing a midi file")
 
 (defvar mma-midi-player-arg
-"-Os"
-;"-p 128:0"
+;;"-Os" ; for timidity
+;;"-p 128:0" 
+"--replace"  ; for xplayer
   "arguments to give to mma-midi-player"
 )
 
@@ -106,11 +109,13 @@
   (use-local-map mma-mode-map)
   (setq major-mode 'mma-mode)
   (setq mode-name "Mma")
-  (setq comment-start "// ")
-  (setq comment-end "")
-  (setq comment-column 32)
+  ;;
   (make-local-variable 'font-lock-defaults)
   (setq font-lock-defaults '(mma-font-lock-keywords t t))
+  (make-local-variable 'comment-start)
+  (setq comment-start "// ")
+  (make-local-variable 'comment-end)
+  (setq comment-end "")
   )
 
 (defun mma-midi-name ()
@@ -235,7 +240,7 @@ Args are disregarded"
 
 (defun mma-set-midi ( synth )
   "sets up MIDI playing according to synth, which can be:\n
-   aplaymidi,timidity,other"
+   aplaymidi, timidity, xplayer, other"
   (cond ((string= synth "aplaymidi") 
 	 (progn 
 	   (setq mma-midi-player "aplaymidi")
@@ -244,6 +249,10 @@ Args are disregarded"
 	 (progn
 	   (setq mma-midi-player "timidity")
 	   (setq mma-midi-player-arg mma-timidity-default-options)))
+	((string= synth "xplayer")
+	 (progn
+	   (setq mma-midi-player "xplayer")
+	   (setq mma-midi-player-arg "--replace")))
 	(t
 	 (progn
 	   (setq mma-midi-player 
@@ -277,6 +286,7 @@ Args are disregarded"
   '("Create MIDI file" . mma-compile))
 (define-key menu-bar-mma-menu [mma-compile-and-play]
   '("Compile and play" . mma-compile-and-play))
+
 
 (defvar mma-track-commands 
   '("Accent" "Articulate" "ChShare" "Channel" "ChannelPref"
