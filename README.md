@@ -8,6 +8,17 @@ It is based on an original version from Vu Ngoc San.
 
 Enhancements:
 
+* Buffer selection preview.
+
+  This function looks for a sentinel `// End of Preamble` in the
+  current buffer. If found, everything from the start of the buffer up
+  to and including this line will be written to a temp file.
+  
+  The content of the current selection is appended to the file and
+  then an mma compile will process this file and play it. This makes
+  it easy to quickly play selected portions of the MMA song in
+  progress.
+
 * Force MMA files to be encoded in Latin1, MMA cannot handle Unicode yet.
 
 The MMA program is written by Bob van der Poel.
