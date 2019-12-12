@@ -1,6 +1,6 @@
 ;; mma.el, emacs major mode for mma: Musical MIDI Accompaniment
 ;;
-;; Copyright VU NGOC San 2005-2018
+;; Derived from an original version Copyright VU NGOC San 2005-2018
 ;; san.vu-ngoc_ _@_ _univ-rennes1.fr
 ;; 
 ;; version February 8, 2014: emacs-23.4.1 version.  This version will
@@ -98,6 +98,7 @@
     (define-key map "\C-c\C-p" 'mma-play)
     (define-key map "\C-c\C-x" 'mma-stop)
     (define-key map "\C-c\C-r" 'mma-compile-and-play)
+    (define-key map "\C-c\C-v" 'mma-preview)
     map)
   "Keymap used in mma-mode."
   )
@@ -122,12 +123,24 @@
   (setq comment-end "")
   )
 
+;; Use conformant buffer names for the compiler and midi player.
+;; You may wish to add these names to special-display-buffer-names
+;; so the buffers will be shown like 'real' compile buffers.
+(defun mma-compilation-buffer-name ( &rest foo )
+  "mma-compilation-buffer"
+  "*mma compilation*"
+  )
+(defun mma-midi-player-buffer-name ( &rest foo )
+  "mma-midi-player-buffer"
+  "*mma midi player*"
+  )
+
 (defun mma-midi-name ()
   "parse the compilation buffer to extract the midi file name. If not found, or if no such buffer, returns the .mma file with .mid extension"
   (save-excursion  
-    (if (get-buffer "*mma-compilation-buffer*")
+    (if (get-buffer (mma-compilation-buffer-name))
 	(progn
-	  (set-buffer "*mma-compilation-buffer*")
+	  (set-buffer (mma-compilation-buffer-name))
 	  (goto-char 0)
 	  (re-search-forward "'\\([^']*\.mid\\)'")
 					;ou mettre tout le nom de fichier
@@ -141,11 +154,6 @@
 	      ".mid")
       )
     )
-  )
-
-(defun mma-compilation-buffer-name (foo)
-  "mma-compilation-buffer"
-  "*mma-compilation-buffer*"
   )
 
 (defun mma-compile-internal-args (arg)
@@ -174,9 +182,8 @@
 (defun mma-test ()
   "save current buffer, run mma on it without generating midi file"
   (interactive)
-  (mma-compile-internal-args "-sn ")
+  (mma-compile-internal-args "-s -n ")
   )
-
 
 (defun mma-play ()
   "play already generated midi file in the *last* compilation"
@@ -195,20 +202,20 @@
   "play midi file.  
 This function can be called automatically by the compile mode. 
 Args are disregarded"
+  (with-current-buffer (get-buffer-create (mma-midi-player-buffer-name)) (erase-buffer))
   (start-process-shell-command 
-   "playing midi" "midi buffer" 
+   "playing midi" (mma-midi-player-buffer-name) 
    (concat (shell-quote-argument mma-midi-player) " "
 	   mma-midi-player-arg)
    (shell-quote-argument (mma-midi-name)))
-  (display-buffer "midi buffer")  
+  (display-buffer (mma-midi-player-buffer-name))
   )
-
 
 (defun mma-stop ()
   "kill midi process"
   (interactive)
-  (delete-process "midi buffer") 
-  (display-buffer "midi buffer")
+  (delete-process (mma-midi-player-buffer-name)) 
+  (display-buffer (mma-midi-player-buffer-name) nil "*midi player*")
   )
 
 (defun mma-compile-and-play ()
@@ -218,6 +225,43 @@ Args are disregarded"
   (mma-compile-internal)
   )
 
+(defvar mma-preview-file (format "/tmp/mma-preview-%s-%d.mma"
+				 (user-login-name) (emacs-pid))
+  "MMA temp file for preview")
+
+;; Preview of a selection of the current buffer.
+;; This function looks for a sentinel "// End of Preamble" in the buffer.
+;; If found, everything from the start of the buffer up to and
+;; including this line will be written to a temp file. The content of
+;; the current selection is added to the file and then an mma compile
+;; will process this file and play it.
+;; This makes it easy to quickly play selected portions of the MMA
+;; song in progress.
+(defun mma-preview (rmin rmax)
+  "Save preamble plus current selection to a temp file, run MMA on it and play generated midi file"
+  (interactive "r")
+  (setq compilation-finish-function 'mma-play-internal)
+  (save-excursion
+    (goto-char (point-min))
+    (let ((case-fold-search t))
+      (write-region
+       (point-min)
+       (or
+	(re-search-forward
+	 "^/\\*\\*+ *end +\\(of +\\)?preamble *\\*\\*+/[\n\r]+" nil t)
+	(re-search-forward
+	 "^// *end +\\(of +\\)?preamble[\n\r]+"))
+       mma-preview-file
+       nil 'quiet)))
+  (save-excursion
+    (write-region rmin rmax
+		  mma-preview-file
+		  t 'quiet)
+    (compilation-start
+     (concat mma-command " " mma-preview-file)
+     nil 'mma-compilation-buffer-name nil)
+    )
+  )
 
 (defun mma-select-midi-port ()
   "ask user for midi port"
@@ -268,7 +312,6 @@ Args are disregarded"
   (mma-select-options)
   )
 
-
 (defvar menu-bar-mma-menu (make-sparse-keymap "Mma"))
 (define-key mma-mode-map [menu-bar mma] (cons "Mma" menu-bar-mma-menu))
 
@@ -290,14 +333,15 @@ Args are disregarded"
   '("Create MIDI file" . mma-compile))
 (define-key menu-bar-mma-menu [mma-compile-and-play]
   '("Compile and play" . mma-compile-and-play))
-
+(define-key menu-bar-mma-menu [mma-preview]
+  '("Play selection" . mma-preview))
 
 (defvar mma-track-commands 
   '("Accent" "Articulate" "ChShare" "Channel" "ChannelPref"
     "Compress" "Copy" "Debug" "Define"
     "Delete" "Direction" "DrumType" "DupRoot" "ForceOut"
-     "Harmony" "HarmonyOnly" "HarmonyVolume" "Invert" "Limit"
-     "MIDIClear" "MIDIGliss" "MIDIInc" "MIDIPan" "MIDISeq" "MIDITName"
+    "Harmony" "HarmonyOnly" "HarmonyVolume" "Invert" "Limit"
+    "MIDIClear" "MIDIGliss" "MIDIInc" "MIDIPan" "MIDISeq" "MIDITName"
     "MIDIVoice" "MIDIVolume" "Mallet" "NoteSpan" "Octave" "Off" "On"
     "RSkip" "RTime" "RVolume" "Range"
     "Riff" "ScaleType" "Sequence" "Strum" "Tone" "Voice"
@@ -326,13 +370,13 @@ Args are disregarded"
     "Goto" "Groove" "If" "IfEnd" "Inc" "Include"
     "KeySig" "Label" "Lyric" "MIDI" "MidiFile" "MIDIMark" "MIDISplit"
     "MmaEnd" "MmaStart" "Mset" "MsetEnd"
-     "Print" "PrintActive" "PrintChord" "Repeat" "RepeatEnd" "RepeatEnding"
-     "RndSeed" "RndSet"
-     "Seq" "SeqSize" "Set" "SetAutoLibPath" "SetIncPath" "SetLibPath"
-     "SetOutPath"
-     "ShowVars" "StackValue" "SwingMode" "Tempo"
-     "Time" "TimeSig" "Transpose" "UnSet" "Use" "VExpand" "VoiceTr"
-     "VoiceVolTr")
+    "Print" "PrintActive" "PrintChord" "Repeat" "RepeatEnd" "RepeatEnding"
+    "RndSeed" "RndSet"
+    "Seq" "SeqSize" "Set" "SetAutoLibPath" "SetIncPath" "SetLibPath"
+    "SetOutPath"
+    "ShowVars" "StackValue" "SwingMode" "Tempo"
+    "Time" "TimeSig" "Transpose" "UnSet" "Use" "VExpand" "VoiceTr"
+    "VoiceVolTr")
   "list of mma non-track commands"
   )
 
@@ -346,7 +390,6 @@ Args are disregarded"
     (concat value "\\)")
     )
   )
-
 
 (defun mma-font-lock ()
   "sets variables for font-lock mode"

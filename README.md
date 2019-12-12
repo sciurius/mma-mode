@@ -38,6 +38,16 @@ In your `.emacs` add the following lines:
 Then when you open a `.mma` file you should have a `Mma` menu in the menu-bar.
 It shows the keyboard shortcuts as well.
 
+If you want the MMA 'compile' and 'midi player' buffers to be shown in
+a separate window, add the following to your `.emacs`:
+
+    (eval-after-load "mma"
+      '(progn
+        (add-to-list 'special-display-buffer-names
+                     (mma-compilation-buffer-name))
+        (add-to-list 'special-display-buffer-names
+                     (mma-midi-player-buffer-name))))
+
 ## MIDI players
 
 This mode is originally written for using the midi player `xplayer`, `aplaymidi`
@@ -53,7 +63,6 @@ An alternate midi player:
 
 	(setq mma-midi-player "/usr/bin/playmidi")
 	(setq mma-midi-player-arg "-e -D /dev/midi")
-;;
 
 ## License
 
