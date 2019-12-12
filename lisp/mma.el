@@ -102,12 +102,16 @@
   "Keymap used in mma-mode."
   )
 
+(defvar mma-file-encoding 'latin-1
+  "Force MMA buffers into Latin-1 encoding for MMA.")
+
 (defun mma-mode ()
   "Major mode for mma"
   (interactive)
   (kill-all-local-variables)
   (use-local-map mma-mode-map)
   (setq major-mode 'mma-mode)
+  (setq buffer-file-coding-system mma-file-encoding)
   (setq mode-name "Mma")
   ;;
   (make-local-variable 'font-lock-defaults)
