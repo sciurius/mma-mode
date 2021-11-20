@@ -1,5 +1,13 @@
 # Changes in Emacs MMA mode
 
+## 2020-04-18
+
+* Remove mma-file-encoding. No longer necessary with MMA/python3.
+
+* Add mma-mode-version.
+
+* Add -d to mma run command.
+
 ## 2019-12-12
 
 * Add preview function (bound to C-c C-v).

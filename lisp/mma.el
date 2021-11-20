@@ -62,6 +62,13 @@
 	    compilation-error-regexp-alist)
 )
 
+(defvar mma-mode-version-string "0.12")
+(defun mma-mode-version nil (interactive)
+  "Returns the version of mma-mode."
+  (if (called-interactively-p 'interactive)
+      (message "%s" mma-mode-version-string)
+    mma-mode-version-string))
+
 (setq compilation-finish-function nil)
 
 ;(setq shell-file-name "bash")
@@ -103,8 +110,9 @@
   "Keymap used in mma-mode."
   )
 
-(defvar mma-file-encoding 'latin-1
-  "Force MMA buffers into Latin-1 encoding for MMA.")
+;; No longer needed for MMA w/ python3/
+;;(defvar mma-file-encoding 'latin-1
+;;  "Force MMA buffers into Latin-1 encoding for MMA.")
 
 (defun mma-mode ()
   "Major mode for mma"
@@ -112,7 +120,7 @@
   (kill-all-local-variables)
   (use-local-map mma-mode-map)
   (setq major-mode 'mma-mode)
-  (setq buffer-file-coding-system mma-file-encoding)
+;;  (setq buffer-file-coding-system mma-file-encoding)
   (setq mode-name "Mma")
   ;;
   (make-local-variable 'font-lock-defaults)
@@ -182,7 +190,7 @@
 (defun mma-test ()
   "save current buffer, run mma on it without generating midi file"
   (interactive)
-  (mma-compile-internal-args "-s -n ")
+  (mma-compile-internal-args "-s -n -d ")
   )
 
 (defun mma-play ()

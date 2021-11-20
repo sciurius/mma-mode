@@ -19,8 +19,6 @@ Enhancements:
   it easy to quickly play selected portions of the MMA song in
   progress.
 
-* Force MMA files to be encoded in Latin1, MMA cannot handle Unicode yet.
-
 The MMA program is written by Bob van der Poel.
 See [his MMA site](https://www.mellowwood.ca/mma) for
 details on the MMA program.
