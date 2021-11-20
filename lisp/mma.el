@@ -62,7 +62,7 @@
 	    compilation-error-regexp-alist)
 )
 
-(setq compilation-finish-function nil)
+(setq compilation-finish-functions nil)
 
 ;(setq shell-file-name "bash")
 
@@ -175,7 +175,7 @@
 (defun mma-compile ()
  "save current buffer and run mma on it (disabling auto-playing)"
   (interactive)
-  (setq compilation-finish-function nil)
+  (setq compilation-finish-functions nil)
   (mma-compile-internal)
 )
 
@@ -221,7 +221,7 @@ Args are disregarded"
 (defun mma-compile-and-play ()
   "save current buffer, run mma on it and play generated midi file"
   (interactive)
-  (setq compilation-finish-function 'mma-play-internal)
+  (setq compilation-finish-functions '(mma-play-internal))
   (mma-compile-internal)
   )
 
@@ -240,7 +240,7 @@ Args are disregarded"
 (defun mma-preview (rmin rmax)
   "Save preamble plus current selection to a temp file, run MMA on it and play generated midi file"
   (interactive "r")
-  (setq compilation-finish-function 'mma-play-internal)
+  (setq compilation-finish-functions '(mma-play-internal))
   (save-excursion
     (goto-char (point-min))
     (let ((case-fold-search t))
